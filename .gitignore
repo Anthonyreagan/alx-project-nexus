@@ -1,0 +1,57 @@
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+*.env # Crucial: Ignores your .env file containing sensitive credentials
+.python-version # For pyenv or similar version managers
+
+# Django
+*.log
+*.pot
+*.mo
+db.sqlite3 # If you were using SQLite, this would ignore the database file
+media/ # Directory for user-uploaded media files (should be handled by cloud storage in production)
+static/ # Directory for collected static files (should be handled by web server in production)
+
+# IDEs and Editors
+.idea/ # PyCharm
+.vscode/ # VS Code
+.DS_Store # macOS
+Thumbs.db # Windows
+ehthumbs.db # Windows
+.project # Eclipse
+.settings # Eclipse
+.metadata # Eclipse
+
+# Operating System Files
+*.swp
+*~
+.nfs*
+
+# Virtual environments (common names)
+.venv/
+venv/
+env/
+
+# Package management
+poetry.lock
+Pipfile.lock
+
+# Build artifacts
+dist/
+build/
+*.egg
+
+# Testing
+.coverage
+.tox/
+
+# Other temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
