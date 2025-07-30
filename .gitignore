@@ -55,3 +55,4 @@ build/
 *.bak
 *.swp
 *.swo
+.env
