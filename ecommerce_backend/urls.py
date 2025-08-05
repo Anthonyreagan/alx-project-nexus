@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     # Application URLs
-    path('api/products/', include('products.urls')),
+    path('api/', include('products.urls')),
     path('api/accounts/', include('accounts.urls')),
 
     # URLs for the API documentation (Swagger UI and ReDoc)
