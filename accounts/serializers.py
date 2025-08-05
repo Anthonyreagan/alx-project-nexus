@@ -21,7 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
         # The password field is write-only, so we create the user with `set_password`.
         user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            # Use .get() to handle optional email gracefully
+            email=validated_data.get('email'),
             password=validated_data['password']
         )
         return user
