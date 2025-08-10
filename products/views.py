@@ -3,6 +3,7 @@
 from rest_framework import viewsets, filters, generics, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
+from django.db import transaction
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -168,38 +169,61 @@ class OrderItemViewSet(viewsets.ReadOnlyModelViewSet):
 # ----------------- Custom API Views -----------------
 
 class CheckoutView(APIView):
-    """
-    API view to convert a user's cart into an order.
-    - POST: Create an order from the current cart.
-    """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        cart = get_object_or_404(Cart, user=request.user)
-        cart_items = cart.items.all()
-        if not cart_items:
-            return Response({"detail": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        order_items_data = request.data.get('order_items')
 
-        total_amount = sum(item.product.price * item.quantity for item in cart_items)
-        order = Order.objects.create(user=request.user, total_amount=total_amount, status='pending')
+        if not order_items_data:
+            return Response({"error": "No order items provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-        order_items = [
-            OrderItem(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
-                price=item.product.price
-            )
-            for item in cart_items
-        ]
-        OrderItem.objects.bulk_create(order_items)
+        # Calculate total price correctly from the received data
+        try:
+            # Convert price to float before summing to ensure correct calculation
+            total_price = sum(item['quantity'] * float(item['price']) for item in order_items_data)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid price or quantity format in order items."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Clear the cart after checkout
-        cart.items.all().delete()
+        try:
+            with transaction.atomic():
+                # Create the Order instance. 'total_price' is now a field on the Order model.
+                order = Order.objects.create(
+                    user=request.user,
+                    total_price=total_price, # Pass the calculated total_price to the model's field
+                )
 
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                for item_data in order_items_data:
+                    try:
+                        product = Product.objects.get(id=item_data['product'])
+                    except Product.DoesNotExist:
+                        # Rollback transaction if any product is not found
+                        raise ValueError(f"Product with ID {item_data['product']} not found.")
 
+                    # Create OrderItem
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=item_data['quantity'],
+                        price=item_data['price'], # Use the price sent by frontend (or product.price if validated)
+                        product_name=product.name # Store name for historical record
+                    )
+
+                    # Update product stock (ensure stock is sufficient)
+                    if product.stock < item_data['quantity']:
+                        raise ValueError(f"Not enough stock for product {product.name}. Available: {product.stock}, Requested: {item_data['quantity']}")
+                    product.stock -= item_data['quantity']
+                    product.save()
+
+            serializer = OrderSerializer(order)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except ValueError as e:
+            # Catch custom validation errors (e.g., product not found, insufficient stock)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            # Catch any other unexpected errors
+            print(f"Checkout unexpected error: {e}") # Log the full error for debugging
+            return Response({"error": "An internal server error occurred during checkout.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ProtectedView(APIView):
     """

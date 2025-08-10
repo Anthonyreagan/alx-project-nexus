@@ -1,0 +1,27 @@
+/* src/index.css */
+
+/*
+Add any global CSS styles here.
+For a Tailwind CSS project, you might include Tailwind's base styles.
+Example:
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+*/
+
+/* Basic body styling for consistent look, using Inter font as specified */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Ensure all elements have rounded corners for consistency */
+* {
+    border-radius: 0.5rem; /* Default rounded corners for all elements */
+}
+
+/* You can add more specific global styles if needed */
+

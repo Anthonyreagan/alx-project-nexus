@@ -1,5 +1,3 @@
-# accounts/views.py
-
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import UserSerializer
@@ -12,12 +10,13 @@ class UserRegistrationView(generics.CreateAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [AllowAny] # Allow anyone to register a new account
+    permission_classes = [AllowAny]
+    authentication_classes = []# Allow anyone to register a new account
 
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(generics.RetrieveUpdateAPIView): # Changed from RetrieveAPIView to RetrieveUpdateAPIView
     """
-    API view to retrieve the details of the currently authenticated user.
+    API view to retrieve and update the details of the currently authenticated user.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer

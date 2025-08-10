@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'rest_framework',  # Django REST Framework
     'rest_framework_simplejwt',  # JWT authentication
     'django_filters',  # For powerful filtering capabilities
-    'drf_yasg',  # API documentation (Swagger/ReDoc)
+    'drf_yasg', # API documentation (Swagger/ReDoc)
+    'corsheaders',
 
     # Your project apps
     'products',
@@ -47,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -124,7 +126,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # Default number of items per page
+    'PAGE_SIZE': 5,  # Default number of items per page
 }
 
 # --- Simple JWT Settings ---
@@ -146,3 +148,6 @@ SIMPLE_JWT = {
 
 # --- Custom User Model Configuration ---
 AUTH_USER_MODEL = 'accounts.User'
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", # This is your React app's development server
+]
